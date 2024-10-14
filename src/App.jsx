@@ -23,10 +23,16 @@ function App() {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalImg, setModalImg] = useState(null);
-  const [hasMoreImages, setHasMoreImages] = useState(false);
+  const [moreImages, setMoreImages] = useState(false);
 
   const openModal = image => {
-    setModalImg({ url: image.urls.regular, description: image.description });
+    console.log('Image object:', image);
+    setModalImg({
+      url: image.urls.regular,
+      description: image.description,
+      likes: image.likes,
+      author: image.user.name,
+    });
     setModalIsOpen(true);
   };
 
@@ -66,10 +72,10 @@ function App() {
         });
         if (response.data.results.length === 0) {
           toast.error('No images found!');
-          setHasMoreImages(false);
+          setMoreImages(false);
         } else {
           setImages(prevImages => [...prevImages, ...response.data.results]);
-          setHasMoreImages(response.data.results.length >= 16);
+          setMoreImages(response.data.results.length >= 16);
         }
       } catch (error) {
         setError('Something went wrong. Please try again later.');
@@ -81,31 +87,8 @@ function App() {
     fetchImages();
   }, [searchWord, page]);
 
-  // const handleClick = async () => {
-  //   setPage(prevPage => prevPage + 1);
-  // setLoading(true);
-  // setError(null);
-  // try {
-  //   const response = await axios.get(UNSPLASH_API_URL, {
-  //     params: {
-  //       query: searchWord,
-  //       client_id: UNSPLASH_ACCESS_KEY,
-  //       per_page: 16,
-  //       page: page + 1, // Завантажуємо наступну сторінку
-  //     },
-  //   });
-  //   setImages(prevImages => [...prevImages, ...response.data.results]);
-  //   setPage(prevPage => prevPage + 1); // Збільшуємо номер сторінки
-  // } catch (err) {
-  //   setError('Unable to load more images. Please try again.');
-  //   console.error(err);
-  // } finally {
-  //   setLoading(false);
-  // }
-  // };
-
   const handleClick = () => {
-    if (hasMoreImages) {
+    if (moreImages) {
       setPage(prevPage => prevPage + 1);
     }
   };
@@ -126,12 +109,12 @@ function App() {
 
       {modalIsOpen && (
         <ImageModal
-          isOpen={modalIsOpen}
-          onRequestClose={closeModal}
+          modalIsOpen={modalIsOpen}
+          closeModal={closeModal}
           selectedImg={modalImg}
         />
       )}
-      {!loading && hasMoreImages && <LoadMoreBtn onClickImg={handleClick} />}
+      {!loading && moreImages && <LoadMoreBtn onClick={handleClick} />}
     </div>
   );
 }
