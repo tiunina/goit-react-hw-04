@@ -1,0 +1,139 @@
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { toast, Toaster } from 'react-hot-toast';
+
+import './App.css';
+
+import SearchBar from './components/SearchBar/SearchBar';
+import ImageGallery from './components/ImageGallery/ImageGallery';
+import Loader from './components/Loader/Loader';
+import ErrorMessage from './components/ErrorMessage/ErrorMessage';
+import LoadMoreBtn from './components/LoadMoreBtn/LoadMoreBtn';
+import ImageModal from './components/ImageModal/ImageModal';
+
+const UNSPLASH_ACCESS_KEY = 'nrt2_X9rhmfggYGjlByY5m5iNsF4xYbOIV_PzQ_WLAA';
+const UNSPLASH_API_URL = 'https://api.unsplash.com/search/photos';
+
+function App() {
+  const [searchWord, setSearchWord] = useState('');
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [modalImg, setModalImg] = useState(null);
+  const [hasMoreImages, setHasMoreImages] = useState(false);
+
+  const openModal = image => {
+    setModalImg({ url: image.urls.regular, description: image.description });
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setModalImg(null);
+  };
+
+  const handleSubmit = event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const inputValue = form.elements.searchBarInput.value.trim('');
+    if (inputValue === '') {
+      toast.error('Enter a search word!');
+      return;
+    }
+    setSearchWord(inputValue);
+    setPage(1);
+    setImages([]);
+    form.reset();
+  };
+
+  useEffect(() => {
+    if (!searchWord) return;
+
+    const fetchImages = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(UNSPLASH_API_URL, {
+          params: {
+            query: searchWord,
+            client_id: UNSPLASH_ACCESS_KEY,
+            per_page: 16,
+            page: page,
+          },
+        });
+        if (response.data.results.length === 0) {
+          toast.error('No images found!');
+          setHasMoreImages(false);
+        } else {
+          setImages(prevImages => [...prevImages, ...response.data.results]);
+          setHasMoreImages(response.data.results.length >= 16);
+        }
+      } catch (error) {
+        setError('Something went wrong. Please try again later.');
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchImages();
+  }, [searchWord, page]);
+
+  // const handleClick = async () => {
+  //   setPage(prevPage => prevPage + 1);
+  // setLoading(true);
+  // setError(null);
+  // try {
+  //   const response = await axios.get(UNSPLASH_API_URL, {
+  //     params: {
+  //       query: searchWord,
+  //       client_id: UNSPLASH_ACCESS_KEY,
+  //       per_page: 16,
+  //       page: page + 1, // Завантажуємо наступну сторінку
+  //     },
+  //   });
+  //   setImages(prevImages => [...prevImages, ...response.data.results]);
+  //   setPage(prevPage => prevPage + 1); // Збільшуємо номер сторінки
+  // } catch (err) {
+  //   setError('Unable to load more images. Please try again.');
+  //   console.error(err);
+  // } finally {
+  //   setLoading(false);
+  // }
+  // };
+
+  const handleClick = () => {
+    if (hasMoreImages) {
+      setPage(prevPage => prevPage + 1);
+    }
+  };
+
+  return (
+    <div>
+      <SearchBar onSubmit={handleSubmit} />
+      <Toaster position="top-right" />
+      {loading && (
+        <div>
+          <Loader />
+        </div>
+      )}
+      {error && <ErrorMessage />}
+      {images.length > 0 && (
+        <ImageGallery images={images} onClick={openModal} />
+      )}
+
+      {modalIsOpen && (
+        <ImageModal
+          isOpen={modalIsOpen}
+          onRequestClose={closeModal}
+          selectedImg={modalImg}
+        />
+      )}
+      {!loading && hasMoreImages && <LoadMoreBtn onClickImg={handleClick} />}
+    </div>
+  );
+}
+
+export default App;
