@@ -1,15 +1,19 @@
+import style from './SearchBar.module.css';
 const SearchBar = ({ onSubmit }) => {
   return (
-    <header>
+    <header className={style.header}>
       <form onSubmit={onSubmit}>
         <input
+          className={style.input}
           name="searchBarInput"
           type="text"
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
         />
-        <button type="submit">Search</button>
+        <button className={style.button} type="submit">
+          Search
+        </button>
       </form>
     </header>
   );

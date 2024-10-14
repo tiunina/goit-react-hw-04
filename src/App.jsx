@@ -34,11 +34,13 @@ function App() {
       author: image.user.name,
     });
     setModalIsOpen(true);
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
   };
 
   const closeModal = () => {
     setModalIsOpen(false);
     setModalImg(null);
+    document.body.style.overflow = 'auto'; // Restore scrolling
   };
 
   const handleSubmit = event => {
@@ -92,6 +94,11 @@ function App() {
       setPage(prevPage => prevPage + 1);
     }
   };
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto'; // Clean up on unmount
+    };
+  }, []);
 
   return (
     <div>

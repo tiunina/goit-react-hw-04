@@ -1,3 +1,4 @@
+import style from './ImageModal.module.css';
 import Modal from 'react-modal';
 Modal.setAppElement('#root');
 import { CgCloseO } from 'react-icons/cg';
@@ -14,6 +15,8 @@ const customStyles = {
 const ImageModal = ({ modalIsOpen, closeModal, selectedImg }) => {
   return (
     <Modal
+      className={style.customModalContent}
+      overlayClassName={style.overlay}
       isOpen={modalIsOpen}
       onRequestClose={closeModal}
       style={customStyles}
@@ -21,6 +24,7 @@ const ImageModal = ({ modalIsOpen, closeModal, selectedImg }) => {
       appElement={document.getElementById('root')}
     >
       <button
+        className={style.btnClose}
         onClick={closeModal}
         style={{ border: 'none', background: 'none', cursor: 'pointer' }}
       >
@@ -29,10 +33,13 @@ const ImageModal = ({ modalIsOpen, closeModal, selectedImg }) => {
 
       {selectedImg && (
         <div>
-          <img src={selectedImg.url} alt={selectedImg.description || 'Image'} />
+          <img
+            className={style.modalImg}
+            src={selectedImg.url}
+            alt={selectedImg.description || 'Image'}
+          />
           {selectedImg.description && <p>{selectedImg.description}</p>}
           <p>Author: {selectedImg.author}</p>
-          <p>Likes: {selectedImg.likes}</p>
         </div>
       )}
     </Modal>
